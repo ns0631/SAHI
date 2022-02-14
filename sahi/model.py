@@ -365,14 +365,14 @@ class Yolov5DetectionModel(DetectionModel):
         try:
             model = attempt_load(weights if isinstance(weights, list) else w, map_location=device)
             stride = max(int(model.stride.max()), 32)  # model stride
-            names = model.module.names if hasattr(model, 'module') else model.names  # get class names
+            self.names = model.module.names if hasattr(model, 'module') else model.names  # get class names
             self.model = model  # explicitly assign for to(), cpu(), cuda(), half()
         except Exception as e:
             TypeError("model_path is not a valid yolov5 model path: ", e)
 
         # set category_mapping
         if not self.category_mapping:
-            category_mapping = {str(ind): category_name for ind, category_name in enumerate(self.category_names)}
+            category_mapping = {str(ind): category_name for ind, category_name in enumerate(self.names)}
             self.category_mapping = category_mapping
 
     def perform_inference(self, image: np.ndarray, image_size: int = None):
@@ -417,9 +417,10 @@ class Yolov5DetectionModel(DetectionModel):
         has_mask = self.model.with_mask
         return has_mask
 
-    @property
+    """@property
     def category_names(self):
         return self.model.names
+    """
 
     def _create_object_prediction_list_from_original_predictions(
         self,
